@@ -16,24 +16,32 @@ if cookie:
 
 def dl_mp3(id, target_folder = './'):
     json_url = "https://www.missevan.com/sound/getsound?soundid=" + id
+    danmu_url = "https://www.missevan.com/sound/getdm?soundid=" + id
     r = requests.get(json_url, headers = headers)
     json_content = r.content.decode('utf-8')
     sound_title = re.findall(r"soundstr\":\"(.*?)\"", json_content)[0]
-    fname = sound_title + '.mp3'
+    mp3_fname = sound_title + '.mp3'
+    danmu_fname = sound_title + '.xml'
     invalid = "<>:\"/\\|?*"
     for char in invalid:
-        fname = fname.replace(char, "_")
+        mp3_fname = mp3_fname.replace(char, "_")
+        danmu_fname = danmu_fname.replace(char, "_")
     sound_url = re.findall(r"soundurl\":\"(.*?)\"", json_content)[0]
     if not os.path.exists(target_folder):
         os.mkdir(target_folder)
     mp3_stream = requests.get(sound_url)
+    danmu = requests.get(danmu_url)
     if target_folder != './':
-        path = target_folder + '/' + fname
+        mp3_path = target_folder + '/' + mp3_fname
+        danmu_path = target_folder + '/' + danmu_fname
     else:
-        path = './' + fname
-    with open(path, 'wb') as f:
+        mp3_path = './' + mp3_fname
+        danmu_path = './' + danmu_fname
+    with open(mp3_path, 'wb') as f:
         f.write(mp3_stream.content)
-    print(fname + " downloaded in folder " + target_folder)
+    with open(danmu_path, 'wb') as f:
+        f.write(danmu.content)
+    print(mp3_fname +" and " + danmu_fname + " downloaded in folder " + target_folder)
 
 def get_mp3s(drama_id):
     json_url = "https://www.missevan.com/dramaapi/getdrama?drama_id=" + drama_id
